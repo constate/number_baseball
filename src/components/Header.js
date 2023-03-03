@@ -20,7 +20,7 @@ const Header = () => {
     return (
         <>
             <VersionTitle>
-                ver 0.0.2
+                ver 0.2.0
             </VersionTitle>
             <HeaderTitle>
                 NUMBER BASEBALL

@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import Header from '../components/Header';
 
 const Button = styled.button`
+    font-family: 'Raleway', sans-serif;
     margin: 10px;
     width: max-content;
     border: none;
@@ -19,11 +20,33 @@ const Button = styled.button`
         scale: 0.98;
     }
 `;
+
+const InstaButton = styled.button`
+    font-family: 'Raleway', sans-serif;
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: max-content;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    color: #FFFFFF;
+    height: 40px;
+    background: #9796f0;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #fbc7d4, #9796f0);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #fbc7d4, #9796f0); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    cursor: pointer;
+    &:active {
+        scale: 0.98;
+    }
+`;
+
 const SingleNumberInput = styled.input`
     width : 40px;
     height: 40px;
     border-radius: 10px;
-    border: 1px solid #0b5394;
+    border: 4px solid #0b5394;
+    font-size: 18px;
     text-align: center;
     outline: none;
     & + & {
@@ -32,32 +55,34 @@ const SingleNumberInput = styled.input`
 `;
 
 const ResultWrap = styled.div`
-    width: 300px;
-    /* height: 800px; */
+    /* width: 300px; */
+    height: calc(100vh - 300px);
+    overflow: auto;
     padding: 20px;
     margin: 0 auto;
 `;
 
 const ResultBox = styled.div`
     width: 100%;
-    height: 100px;
-    border: 1px solid #0b5394;
-    border-radius: 10px;
-    padding: 10px;
-    box-sizing: border-box;
     & + & {
-        margin-top: 20px;
+        margin-top: 10px;
     }
 `;
 
-const ResultIndex = styled.p`
+const ResultIndex = styled.span`
+    font-family: 'Raleway', sans-serif;
+    margin-right: 24px;
+    color: #0b5394;
     font-size: 36px;
-    color: #0047ab;
+
     text-align: left;
 `;
 
 const ResultContent = styled.p`
-    font-size: 18px;
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0b5394;
 `;
 
 let resultId = 1;
@@ -112,13 +137,13 @@ const Main = () => {
         if (strikeCount === 0 && ballCount === 0) {
             return ['OUT', false];
         } else if (strikeCount === 4) {
-            return [`${strikeCount} S`, true];
+            return [`${strikeCount}S`, true];
         } else if (strikeCount === 0) {
-            return [`${ballCount} B`, false];
+            return [`${ballCount}B`, false];
         } else if (ballCount === 0) {
-            return [`${strikeCount} S`, false];
+            return [`${strikeCount}S`, false];
         } else {
-            return [`${strikeCount} S ${ballCount} B`, false];
+            return [`${strikeCount}S ${ballCount}B`, false];
         }
     }
 
@@ -140,12 +165,28 @@ const Main = () => {
 
     const handleFocus = (event) => event.target.select();
 
+    const enterPressEvent = (event) => {
+        if (event.key === 'Enter') {
+            document.getElementById('proposal-btn').click();
+            return;
+        }
+    }
+
+    const openInstagram = () => window.open('https://www.instagram.com/gninuyh_gnus/', '_blank');
+
+    useEffect(() => {
+        setNumber(makeRandomNumber());
+    }, [])
+
     return (
         <div>
             <Header />
             <Button type="" onClick={() => setNumber(makeRandomNumber)}>
-                새 게임 시작하기 
+                NEW GAME
             </Button>
+            <InstaButton onClick={() => openInstagram()}>
+                Go to the maker's Instagram
+            </InstaButton>
             {/* <button onClick={() => {console.log(number)}}>
                 현재 숫자보기
             </button> */}
@@ -157,75 +198,83 @@ const Main = () => {
                     numberChangeMoveEvent(event);
                 }} onChange={(event) => {
                     setFirstInputNumber(`${event.target.value}`);
+                }} onKeyPress={(event) => {
+                    enterPressEvent(event);
                 }} value={firstInputNumber}/>
                 <SingleNumberInput name='number_2' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
                     numberChangeMoveEvent(event);
                 }} onChange={(event) => {
                     setSecondInputNumber(`${event.target.value}`);
+                }} onKeyPress={(event) => {
+                    enterPressEvent(event);
                 }} value={secondInputNumber}/>
                 <SingleNumberInput name='number_3' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
                     numberChangeMoveEvent(event);
                 }} onChange={(event) => {
                     setThirdInputNumber(`${event.target.value}`);
+                }} onKeyPress={(event) => {
+                    enterPressEvent(event);
                 }} value={thirdInputNumber}/>
                 <SingleNumberInput name='number_4' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
                     numberChangeMoveEvent(event);
                 }} onChange={(event) => {
                     setFourthInputNumber(`${event.target.value}`);
+                }} onKeyPress={(event) => {
+                    enterPressEvent(event);
                 }} value={fourthInputNumber}/>
             </div>
             <div>
                 <Button type="" id='proposal-btn' onClick={() => {
+                    const inputElement = document.getElementsByName('number_1')[0];
                     if (isEnding) {
-                        alert('승리하였습니다 새 게임을 시작하기를 눌러주세요');
+                        if (window.confirm(`You've already won the game. Do you want to start a new game?`)) {
+                            setNumber(makeRandomNumber);
+                        }
                         return;
                     }
-                    if (!number) {
-                        alert('새 게임 시작하기를 먼저 눌러주세요!');
-                        return;
-                    }
+                    // if (!number) {
+                    //     alert('새 게임 시작하기를 먼저 눌러주세요!');
+                    //     return;
+                    // }
 
                     if (!firstInputNumber || !secondInputNumber || !thirdInputNumber || !fourthInputNumber) {
-                        alert('모든 숫자를 채워주세요');
+                        alert('Please enter all numbers');
                         return;
                     } else {
                         const setArray = Array.from(new Set([firstInputNumber, secondInputNumber, thirdInputNumber, fourthInputNumber]));
                         if (setArray.length !== 4) {
-                            alert('중복된 숫자가 있습니다 다시 입력해주세요');
+                            alert('There are duplicate numbers, please enter again');
+                            inputElement.focus();
                             return;
                         }
                         inputNumberInit();
                         const resultInputArray = [Number(firstInputNumber), Number(secondInputNumber), Number(thirdInputNumber), Number(fourthInputNumber)];
-                        const resultString = `${resultInputArray.toString(' ').split(',').join('')} => ${checkNumber(resultInputArray, number)[0]}`;
+                        const resultString = `${resultInputArray.toString(' ').split(',').join('')} ➡ ${checkNumber(resultInputArray, number)[0]}`;
                         const isEnding = checkNumber(resultInputArray, number)[1];
                         if (isEnding) {                        
                             setIsEnding(true);
-                            alert(`${resultId}회차에 승리하셨습니다! 타켓 숫자 : ${number}`)
+                            alert(`Congratulations! You won the ${resultId} time! target number : ${number}`);
+                            // alert(`${resultId}회차에 승리하셨습니다! 타켓 숫자 : ${number}`)
                         }
                         setCheckResultArray([
-                            ...checkResultArray,
                             {   
                                 index : resultId++,
-                                value : resultString
-                            }
+                                value : resultString,
+                                is_ending : isEnding,
+                            },
+                            ...checkResultArray,
                         ]);
-                        const inputElement = document.getElementsByName('number_1')[0];
                         inputElement.focus();
                     }
-                }}>
-                    제시하기
-                </Button>
+                }}>Submit ✔</Button>
             </div>
             <ResultWrap>
                 {checkResultArray.map(result => (
-                    // <li key={artist.id}>{artist.name}</li>  
                     <ResultBox key={result.index}>
                         <ResultIndex>
                             {result.index}.
                         </ResultIndex>
-                        <ResultContent>
-                            {result.value}
-                        </ResultContent>
+                        {result.is_ending ? <ResultContent>{result.value} 👑</ResultContent> : <ResultContent>{result.value}</ResultContent>}
                     </ResultBox>
                 ))}
             </ResultWrap>

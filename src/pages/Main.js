@@ -1,17 +1,29 @@
+import { logDOM } from '@testing-library/react';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+import Header from '../components/Header';
+
 const Button = styled.button`
     margin: 10px;
     width: max-content;
+    border: none;
+    border-radius: 10px;
+    background-color: #0b5394;
+    padding: 10px;
+    color: #FFFFFF;
     height: 40px;
+    cursor: pointer;
+    &:active {
+        scale: 0.98;
+    }
 `;
 const SingleNumberInput = styled.input`
     width : 40px;
     height: 40px;
     border-radius: 10px;
-    border: 1px solid black;
+    border: 1px solid #0b5394;
     text-align: center;
     outline: none;
     & + & {
@@ -21,16 +33,15 @@ const SingleNumberInput = styled.input`
 
 const ResultWrap = styled.div`
     width: 300px;
-    height: 800px;
+    /* height: 800px; */
     padding: 20px;
-    /* border: 1px solid #000000; */
     margin: 0 auto;
 `;
 
 const ResultBox = styled.div`
     width: 100%;
     height: 100px;
-    border: 1px solid;
+    border: 1px solid #0b5394;
     border-radius: 10px;
     padding: 10px;
     box-sizing: border-box;
@@ -79,6 +90,8 @@ const Main = () => {
             const resultSet = new Set(resultArray);
             resultArray = Array.from(resultSet);
         }
+        const inputElement = document.getElementsByName('number_1')[0];
+        inputElement.focus();
         return resultArray;
     }
     
@@ -109,8 +122,27 @@ const Main = () => {
         }
     }
 
+    const numberChangeMoveEvent = (event) => {
+        const inputElement = document.getElementsByName(event.target.name[0]);
+        inputElement.value = event.target.value;
+
+        if (event.keyCode === 8) {
+            if (event.target.value.length !== event.target.maxLength && event.target.previousElementSibling) {
+                event.target.previousElementSibling.focus();
+            }
+            return;
+        }
+        
+        if (event.target.value.length === event.target.maxLength && event.target.nextElementSibling) {
+            event.target.nextElementSibling.focus();
+        }
+    }
+
+    const handleFocus = (event) => event.target.select();
+
     return (
         <div>
+            <Header />
             <Button type="" onClick={() => setNumber(makeRandomNumber)}>
                 새 게임 시작하기 
             </Button>
@@ -121,21 +153,29 @@ const Main = () => {
                 입력칸 초기화
             </button> */}
             <div>
-                <SingleNumberInput maxLength={1} min="0" onChange={(event) => {
+                <SingleNumberInput name='number_1' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
+                    numberChangeMoveEvent(event);
+                }} onChange={(event) => {
                     setFirstInputNumber(`${event.target.value}`);
                 }} value={firstInputNumber}/>
-                <SingleNumberInput maxLength={1} min="0" onChange={(event) => {
+                <SingleNumberInput name='number_2' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
+                    numberChangeMoveEvent(event);
+                }} onChange={(event) => {
                     setSecondInputNumber(`${event.target.value}`);
                 }} value={secondInputNumber}/>
-                <SingleNumberInput maxLength={1} min="0" onChange={(event) => {
+                <SingleNumberInput name='number_3' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
+                    numberChangeMoveEvent(event);
+                }} onChange={(event) => {
                     setThirdInputNumber(`${event.target.value}`);
                 }} value={thirdInputNumber}/>
-                <SingleNumberInput maxLength={1} min="0" onChange={(event) => {
+                <SingleNumberInput name='number_4' autoComplete="off" maxLength={1} min="0" onFocus={handleFocus} onKeyUp={(event) => {
+                    numberChangeMoveEvent(event);
+                }} onChange={(event) => {
                     setFourthInputNumber(`${event.target.value}`);
                 }} value={fourthInputNumber}/>
             </div>
             <div>
-                <Button type="" onClick={() => {
+                <Button type="" id='proposal-btn' onClick={() => {
                     if (isEnding) {
                         alert('승리하였습니다 새 게임을 시작하기를 눌러주세요');
                         return;
@@ -169,9 +209,11 @@ const Main = () => {
                                 value : resultString
                             }
                         ]);
+                        const inputElement = document.getElementsByName('number_1')[0];
+                        inputElement.focus();
                     }
                 }}>
-                    확인하기
+                    제시하기
                 </Button>
             </div>
             <ResultWrap>

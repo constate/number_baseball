@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import packageJson from '../../package.json';
 
 const HeaderTitle = styled.h1`
     font-size: 48px;
@@ -20,7 +21,7 @@ const Header = () => {
     return (
         <>
             <VersionTitle>
-                ver 0.2.0
+                ver {packageJson.version}
             </VersionTitle>
             <HeaderTitle>
                 NUMBER BASEBALL

@@ -1,4 +1,3 @@
-import { logDOM } from '@testing-library/react';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
@@ -115,8 +114,8 @@ const Main = () => {
             const resultSet = new Set(resultArray);
             resultArray = Array.from(resultSet);
         }
-        const inputElement = document.getElementsByName('number_1')[0];
-        inputElement.focus();
+        const number1Element = document.getElementsByName('number_1')[0];
+        number1Element.focus();
         return resultArray;
     }
     
@@ -147,9 +146,11 @@ const Main = () => {
         }
     }
 
+    const isNumeric = number => !isNaN(number);
+
     const numberChangeMoveEvent = (event) => {
-        const inputElement = document.getElementsByName(event.target.name[0]);
-        inputElement.value = event.target.value;
+        const number1Element = document.getElementsByName(event.target.name[0]);
+        number1Element.value = event.target.value;
 
         if (event.keyCode === 8) {
             if (event.target.value.length !== event.target.maxLength && event.target.previousElementSibling) {
@@ -225,17 +226,34 @@ const Main = () => {
             </div>
             <div>
                 <Button type="" id='proposal-btn' onClick={() => {
-                    const inputElement = document.getElementsByName('number_1')[0];
+                    const number1Element = document.getElementsByName('number_1')[0];
+                    const number2Element = document.getElementsByName('number_2')[0];
+                    const number3Element = document.getElementsByName('number_3')[0];
+                    const number4Element = document.getElementsByName('number_4')[0];
                     if (isEnding) {
                         if (window.confirm(`You've already won the game. Do you want to start a new game?`)) {
                             setNumber(makeRandomNumber);
                         }
                         return;
                     }
-                    // if (!number) {
-                    //     alert('새 게임 시작하기를 먼저 눌러주세요!');
-                    //     return;
-                    // }
+                    
+                    if (!isNumeric(firstInputNumber)) {
+                        alert('Please enter only numbers');
+                        number1Element.focus();
+                        return;
+                    } else if (!isNumeric(secondInputNumber)) {
+                        alert('Please enter only numbers');
+                        number2Element.focus();
+                        return;
+                    } else if (!isNumeric(thirdInputNumber)) {
+                        alert('Please enter only numbers');
+                        number3Element.focus();
+                        return;
+                    } else if (!isNumeric(fourthInputNumber)) {
+                        alert('Please enter only numbers');
+                        number4Element.focus();
+                        return;
+                    }
 
                     if (!firstInputNumber || !secondInputNumber || !thirdInputNumber || !fourthInputNumber) {
                         alert('Please enter all numbers');
@@ -244,7 +262,7 @@ const Main = () => {
                         const setArray = Array.from(new Set([firstInputNumber, secondInputNumber, thirdInputNumber, fourthInputNumber]));
                         if (setArray.length !== 4) {
                             alert('There are duplicate numbers, please enter again');
-                            inputElement.focus();
+                            number1Element.focus();
                             return;
                         }
                         inputNumberInit();
@@ -264,7 +282,7 @@ const Main = () => {
                             },
                             ...checkResultArray,
                         ]);
-                        inputElement.focus();
+                        number1Element.focus();
                     }
                 }}>Submit ✔</Button>
             </div>

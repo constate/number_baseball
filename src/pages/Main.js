@@ -1,88 +1,9 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 
+import ReactCanvasConfetti from "react-canvas-confetti";
 import Header from '../components/Header';
-
-const Button = styled.button`
-    font-family: 'Raleway', sans-serif;
-    margin: 10px;
-    width: max-content;
-    border: none;
-    border-radius: 10px;
-    background-color: #0b5394;
-    padding: 10px;
-    color: #FFFFFF;
-    height: 40px;
-    cursor: pointer;
-    &:active {
-        scale: 0.98;
-    }
-`;
-
-const InstaButton = styled.button`
-    font-family: 'Raleway', sans-serif;
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    width: max-content;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    color: #FFFFFF;
-    height: 40px;
-    background: #9796f0;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #fbc7d4, #9796f0);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #fbc7d4, #9796f0); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    cursor: pointer;
-    &:active {
-        scale: 0.98;
-    }
-`;
-
-const SingleNumberInput = styled.input`
-    width : 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: 4px solid #0b5394;
-    font-size: 18px;
-    text-align: center;
-    outline: none;
-    & + & {
-        margin-left: 10px;
-    }
-`;
-
-const ResultWrap = styled.div`
-    /* width: 300px; */
-    height: calc(100vh - 300px);
-    overflow: auto;
-    padding: 20px;
-    margin: 0 auto;
-`;
-
-const ResultBox = styled.div`
-    width: 100%;
-    & + & {
-        margin-top: 10px;
-    }
-`;
-
-const ResultIndex = styled.span`
-    font-family: 'Raleway', sans-serif;
-    margin-right: 24px;
-    color: #0b5394;
-    font-size: 36px;
-
-    text-align: left;
-`;
-
-const ResultContent = styled.p`
-    display: inline-block;
-    font-size: 24px;
-    font-weight: bold;
-    color: #0b5394;
-`;
 
 let resultId = 1;
 
@@ -94,6 +15,9 @@ const Main = () => {
     const [fourthInputNumber, setFourthInputNumber] = useState('');
     const [checkResultArray, setCheckResultArray] = useState([]);
     const [isEnding, setIsEnding] = useState(false);
+
+    const refAnimationInstance = useRef(null);
+    const [intervalId, setIntervalId] = useState();
 
     const inputNumberInit = () => {
         setFirstInputNumber('');
@@ -175,14 +99,71 @@ const Main = () => {
 
     const openInstagram = () => window.open('https://www.instagram.com/gninuyh_gnus/', '_blank');
 
+    // SchoolPride
+    const canvasStyles = {
+        position: "fixed",
+        pointerEvents: "none",
+        width: "100%",
+        height: "100%",
+        top: 0,
+        left: 0
+      };
+      
+    function getAnimationSettings(angle, originX) {
+        return {
+            particleCount: 400,
+            angle,
+            spread: 90,
+            origin: { x: originX },
+            colors: ["#0b5394", "#ffffff", "#fbc7d4", "#9796f0"]
+        };
+    }
+    const getInstance = useCallback((instance) => {
+        refAnimationInstance.current = instance;
+    }, []);
+    
+    const nextTickAnimation = useCallback(() => {
+    if (refAnimationInstance.current) {
+        refAnimationInstance.current(getAnimationSettings(60, 0));
+        refAnimationInstance.current(getAnimationSettings(120, 1));
+    }
+    }, []);
+
+    const startAnimation = useCallback(() => {
+    if (!intervalId) {
+        setIntervalId(setInterval(nextTickAnimation, 16));
+    }
+    }, [nextTickAnimation, intervalId]);
+
+    const pauseAnimation = useCallback(() => {
+    clearInterval(intervalId);
+    setIntervalId(null);
+    }, [intervalId]);
+
+    const stopAnimation = useCallback(() => {
+    clearInterval(intervalId);
+    setIntervalId(null);
+    refAnimationInstance.current && refAnimationInstance.current.reset();
+    }, [intervalId]);
+
     useEffect(() => {
         setNumber(makeRandomNumber());
-    }, [])
+    }, []);
+
+    useEffect(() => {
+    return () => {
+        clearInterval(intervalId);
+    };
+    }, [intervalId]);
 
     return (
         <div>
             <Header />
-            <Button type="" onClick={() => setNumber(makeRandomNumber)}>
+            <Button type="" onClick={() => {
+                if (window.confirm('Would you like to start a new game?')) {
+                    setNumber(makeRandomNumber);
+                }
+            }}>
                 NEW GAME
             </Button>
             <InstaButton onClick={() => openInstagram()}>
@@ -267,16 +248,23 @@ const Main = () => {
                         }
                         inputNumberInit();
                         const resultInputArray = [Number(firstInputNumber), Number(secondInputNumber), Number(thirdInputNumber), Number(fourthInputNumber)];
+                        const resultInputString = resultInputArray.toString(' ').split(',').join('');
                         const resultString = `${resultInputArray.toString(' ').split(',').join('')} ➡ ${checkNumber(resultInputArray, number)[0]}`;
                         const isEnding = checkNumber(resultInputArray, number)[1];
                         if (isEnding) {                        
                             setIsEnding(true);
-                            alert(`Congratulations! You won the ${resultId} time! target number : ${number}`);
-                            // alert(`${resultId}회차에 승리하셨습니다! 타켓 숫자 : ${number}`)
+                            startAnimation();
+                            setTimeout(() => {
+                                pauseAnimation();
+                            }, 40);
+                            // alert(`Congratulations! You won the ${resultId} time! target number : ${number}`);
+                            
                         }
                         setCheckResultArray([
                             {   
                                 index : resultId++,
+                                // number_string : resultInputString,
+                                // check_number_string : checkNumber(resultInputArray, number)[0],
                                 value : resultString,
                                 is_ending : isEnding,
                             },
@@ -285,6 +273,12 @@ const Main = () => {
                         number1Element.focus();
                     }
                 }}>Submit ✔</Button>
+                {/* <Button onClick={() => {
+                    startAnimation();
+                    setTimeout(() => {
+                        pauseAnimation();
+                    }, 40);
+                }}>테스트</Button> */}
             </div>
             <ResultWrap>
                 {checkResultArray.map(result => (
@@ -292,12 +286,108 @@ const Main = () => {
                         <ResultIndex>
                             {result.index}.
                         </ResultIndex>
-                        {result.is_ending ? <ResultContent>{result.value} 👑</ResultContent> : <ResultContent>{result.value}</ResultContent>}
+                        {result.is_ending ? 
+                            <ResultContent>
+                                {result.value} 👑
+                            </ResultContent> :
+                            <ResultContent>
+                                {result.value}
+                            </ResultContent>}
                     </ResultBox>
                 ))}
             </ResultWrap>
+            <ReactCanvasConfetti refConfetti={getInstance} style={canvasStyles} />
         </div>
     );
 };
+
+const Button = styled.button`
+    font-family: 'Raleway', sans-serif;
+    margin: 10px;
+    width: max-content;
+    border: none;
+    border-radius: 10px;
+    background-color: #0b5394;
+    padding: 10px;
+    color: #FFFFFF;
+    height: 40px;
+    cursor: pointer;
+    &:active {
+        scale: 0.98;
+    }
+`;
+
+const InstaButton = styled.button`
+    font-family: 'Raleway', sans-serif;
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: max-content;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    color: #FFFFFF;
+    height: 40px;
+    background: #9796f0;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #fbc7d4, #9796f0);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #fbc7d4, #9796f0); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    cursor: pointer;
+    &:active {
+        scale: 0.98;
+    }
+`;
+
+const SingleNumberInput = styled.input`
+    width : 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 4px solid #0b5394;
+    font-size: 18px;
+    text-align: center;
+    outline: none;
+    & + & {
+        margin-left: 10px;
+    }
+`;
+
+const ResultWrap = styled.div`
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 300px;
+    height: calc(100vh - 300px);
+    overflow: auto;
+    /* padding: 20px; */
+    margin: 0 auto;
+`;
+
+const ResultBox = styled.div`
+    width: 100%;
+    & + & {
+        margin-top: 10px;
+    }
+`;
+
+const ResultIndex = styled.div`
+    display: inline-block;
+    font-family: 'Raleway', sans-serif;
+    width: 100px;
+    /* margin-right: 24px; */
+    color: #0b5394;
+    font-size: 36px;
+    text-align: right;
+`;
+
+const ResultContent = styled.div`
+    display: inline-block;
+    box-sizing: border-box;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    width: 200px;
+    padding-left: 20px;
+    text-align: left;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0b5394;
+`;
 
 export default Main;
